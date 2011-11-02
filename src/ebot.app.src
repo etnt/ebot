@@ -1,0 +1,12 @@
+{application, ebot,
+ [
+  {description, ""},
+  {vsn, "1"},
+  {registered, []},
+  {applications, [
+                  kernel,
+                  stdlib
+                 ]},
+  {mod, { ebot_app, []}},
+  {env, []}
+ ]}.

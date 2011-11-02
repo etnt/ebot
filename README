@@ -1,0 +1,2 @@
+Data=file:consult("priv/example.conf").
+ebot_worker:start_link(Data).
