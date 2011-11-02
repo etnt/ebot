@@ -1,4 +1,3 @@
-
 -module(ebot_sup).
 
 -behaviour(supervisor).
@@ -26,10 +25,21 @@ start_link() ->
 %% ===================================================================
 
 init([]) ->
-    %% FIXME
-    L = file:consult("/home/tobbe/Kreditor/git/ebot/priv/example.conf"),
-
-    Workers = [?CHILD(proplists:get_value(name, Data), Data)
+    L = file:consult(config_file()),
+    Workers = [?CHILD(proplists:get_value(workername, Data), Data)
                || Data <- L],
-
     {ok, { {one_for_one, 5, 10}, Workers} }.
+
+
+%% First look in /etc then in our own priv dir.
+config_file() ->
+    case file:consult("/etc/ebot.conf") of
+        L when is_list(L) -> L;
+        _ ->
+            [_Beam,"ebin"|RevTokPath] = 
+                lists:reverse(string:tokens(code:which(?MODULE),"/")),
+            PrivPath = string:join(
+                         lists:reverse(["priv"|RevTokPath]),"/"),
+            [_|_] = L = file:consult(PrivPath++"/ebot.conf"),
+            L
+    end.
