@@ -61,7 +61,7 @@ say(Sock, Message, Channel, Who) ->
 command(Sock, Command) ->
     %% Workaround: The first message of a sequence does not seem
     %% to be received by the server...so we are sending a blank
-    %% line to get around it.
+    %% line to get ound it.
     gen_tcp:send(Sock, "\r\n"), 
     gen_tcp:send(Sock, [Command,"\r\n"]).
 
@@ -102,7 +102,7 @@ setup_loop(State0, Sock) ->
     loop(State).
 
 join_channels(Sock, Data) ->
-    [ebot_lib:join(Sock, Channel)
+    [join(Sock, Channel)
      || Channel <- get_value(channels, Data)].
 
 loop(State) ->
@@ -154,7 +154,7 @@ chomp(State, Data) ->
     end.
 
 line(#state{socket=Sock}, "PING "++Rest) ->
-    ebot_lib:pong(Sock, Rest);
+    pong(Sock, Rest);
 
 line(#state{socket=Sock, data=Data} = State, Line) ->
     Ms = get_value(matchspecs, Data),

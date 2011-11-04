@@ -17,7 +17,7 @@ status(Sock, Line, Match) ->
     Msg = status_msg(Project),
     case who_and_channel(Line) of
         {Who, Channel} ->
-            ebot_lib:say(Sock, Msg, "#"++Channel, Who);
+            ebot:say(Sock, Msg, "#"++Channel, Who);
         _ ->
             error_logger:error_msg("~p(~p): status, Line = ~p~n",
                                   [?MODULE,?LINE,Line])
@@ -100,7 +100,7 @@ job_status(Project, Job) ->
 welcome(Sock, Line, _Match) ->
     case who_and_channel(Line) of
         {Who, Channel} ->
-            ebot_lib:say(Sock, "Thank you", "#"++Channel, Who);
+            ebot:say(Sock, "Thank you", "#"++Channel, Who);
         _ ->
             error_logger:error_msg("~p(~p): welcome, Line = ~p~n",
                                   [?MODULE,?LINE,Line])
@@ -112,7 +112,7 @@ welcome(Sock, Line, _Match) ->
 time(Sock, Line, _Match) ->
     case who_and_channel(Line) of
         {Who, Channel} ->
-            ebot_lib:say(Sock, time2str(), "#"++Channel, Who);
+            ebot:say(Sock, time2str(), "#"++Channel, Who);
         _ ->
             error_logger:error_msg("~p(~p): time, Line = ~p~n",
                                   [?MODULE,?LINE,Line])
