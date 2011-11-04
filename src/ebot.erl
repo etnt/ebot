@@ -79,8 +79,10 @@ init(Parent, _Options, Data) ->
                                                 Data, S#state.loginfo_fun)
                          ,logerr_fun=get_value(logerror_function,
                                                Data, S#state.logerr_fun)
-                        }, 
-                 ?SECONDS(1)).
+                        }).
+
+connect_loop(State) ->
+    connect_loop(State, ?SECONDS(1)).
 
 %% Implement a simple connect backoff in case of connect failure.
 connect_loop(State, Seconds) ->
@@ -114,17 +116,18 @@ x({tcp, _Socket, Data}, State) ->
     Rest = chomp(State, List),
     State#state{buffer=Rest};
 
-x({tcp_closed = Reason, _Socket}, State) ->
-    elog(State, "tcp connection to ~s:~p closed, exiting...~n",
+x({tcp_closed, _Socket}, State) ->
+    elog(State, "tcp connection to ~s:~p closed, reconnecting...~n",
          [get_value(server, State#state.data),
           get_value(port, State#state.data)]),
-    exit(Reason);
+    connect_loop(State);
 
 x({tcp_error, _Socket, Reason}, State) ->
-    elog(State, "tcp connection error from ~s:~p , exiting...~n",
+    elog(State, "tcp connection error from ~s:~p , Reason = ~p~n",
          [get_value(server, State#state.data),
-          get_value(port, State#state.data)]),
-    exit({tcp_error, Reason});
+          get_value(port, State#state.data),
+          Reason]),
+    State;
 
 x({From, Msg}, State) ->
     ilog(State, "got message: ~p~n",[Msg]),
