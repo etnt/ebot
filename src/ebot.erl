@@ -2,6 +2,9 @@
 %%% Created : 2 Nov 2011 by Torbjorn Tornkvist <tobbe@tornkvist.org>
 %%% Desc.   : A major rework of the manderlbot code, aiming for a lean
 %%%           code base, easily included into any application.
+%%%
+%%% Manderlbot was created:
+%%%   8 Sep 2001 by Mickaël Rémond <mickael.remond@erlang-fr.org>
 %%% --------------------------------------------------------------------
 -module(ebot).
 
@@ -199,7 +202,7 @@ log_in(Sock, Data) ->
     Motd.
 
 log_in_nick(Sock, Nickname) ->
-    NickCommand = ["NICK ", Nickname, "\n"],
+    NickCommand = ["NICK ", Nickname, "\r\n"],
     gen_tcp:send(Sock, NickCommand).
 
 %% Some server send an initial ping after the nickname
@@ -211,7 +214,7 @@ log_in_pong(Sock) ->
 	     after 3000 ->
 		     binary_to_list(<<>>)
 	     end,
-    case string:tokens(Result, "\n") of
+    case string:tokens(Result, "\r\n") of
         [Tok|_] -> testPingPong(Sock, Tok);
         _       -> ok
     end.
@@ -230,13 +233,13 @@ testPingPong(Sock, Data) ->
 %% If the IRC server is password protected,
 %% this function send the needed password.
 log_in_pass(Sock, Password) ->
-    PassCommand = ["PASS ", Password, "\n"],
+    PassCommand = ["PASS ", Password, "\r\n"],
     gen_tcp:send(Sock, PassCommand).
 
 %% Send the user information to terminate the log in phase
 log_in_user(Sock, Nickname, Realname) ->
     UserCommand = lists:concat(["USER ", Nickname,
-                                " dummy dummy :", Realname, "\n"]),
+                                " dummy dummy :", Realname, "\r\n"]),
     gen_tcp:send(Sock, UserCommand).
 
 %% This function gets the Message Of The Day that IRC servers usually
