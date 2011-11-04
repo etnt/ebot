@@ -27,14 +27,24 @@ status_msg(Project) ->
     try
         LatestJob = latest_job(Project),
         case job_status(Project, LatestJob) of
-            "false" -> "no job is running!";
-            _       -> estimated_finish_msg(Project, LatestJob)
+            "false" -> 
+                "no job is running, "++
+                    last_job_ok_msg(Project);
+            _ -> 
+                estimated_finish_msg(Project, LatestJob)
         end
     catch
         throw:Emsg -> Emsg;
           _:_        -> "Error, failed to get job status"
-    
+
     end.
+
+last_job_ok_msg(Project) ->
+    JobStatus = case is_last_job_ok(Project) of
+                    true  -> "Ok!";
+                    false -> "Broken!!"
+                end,
+    "last job was: "++JobStatus.
 
 get_project(Line, {match,[_,{Start0,Len}]}) when Len > 0 ->
     string:substr(Line, Start0+1, Len);
@@ -48,7 +58,8 @@ estimated_finish_msg(Project, LatestJob) ->
     MinLeft = trunc((JobStart + DurSec - gnow()) / 60),
     assert_positive(MinLeft, "Error, got negative estimate"),
     "estimated finish in "++i2l(MinLeft)++ " minutes ("++
-        gtostr(JobStart + DurSec)++")".
+        gtostr(JobStart + DurSec)++") "++
+        last_job_ok_msg(Project).
 
 assert_positive(I,_) when I >= 0 -> true;
 assert_positive(_,E)             -> throw(E).
@@ -91,6 +102,15 @@ job_status(Project, Job) ->
         Project++"/"++Job++"/api/xml?xpath=//building\""
         " | xpath -q -e '/building/text()'",
     hd(string:tokens(os:cmd(Cmd),"\n")).
+
+is_last_job_ok(Project) ->
+    Cmd = "curl -s \"http://"++?JENKINS_HOST++"/view/Klarna/job/"++
+        Project++"/rssAll\" | xpath -q -e /feed/entry/title | "
+        "sort -rn -k2 | head -1 | grep -e 'stable' -e 'back to normal'",
+    case os:cmd(Cmd) of
+        [] -> false;
+        _  -> true
+    end.
 
 %% ---------------------------------------------------------------------
 %% WELCOME
