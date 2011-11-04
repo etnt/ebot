@@ -2,6 +2,7 @@
 
 -export([  welcome/3
          , time/3
+         , pastebin/3
          , status/3
         ]).
 
@@ -123,6 +124,20 @@ welcome(Sock, Line, _Match) ->
             ebot:say(Sock, "Thank you", "#"++Channel, Who);
         _ ->
             error_logger:error_msg("~p(~p): welcome, Line = ~p~n",
+                                  [?MODULE,?LINE,Line])
+    end.
+
+%% ---------------------------------------------------------------------
+%% PASTEBIN
+%%
+%% ":tobbe!~tobbe@foo.bar.com PRIVMSG #staging :ebot: welcome"
+%% ---------------------------------------------------------------------
+pastebin(Sock, Line, _Match) ->
+    case who_and_channel(Line) of
+        {Who, Channel} ->
+            ebot:say(Sock, "http://kgist.internal.machines", "#"++Channel, Who);
+        _ ->
+            error_logger:error_msg("~p(~p): pastebin, Line = ~p~n",
                                   [?MODULE,?LINE,Line])
     end.
 
