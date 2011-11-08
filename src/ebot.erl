@@ -49,9 +49,19 @@ join(Sock, Channel) ->
     command(Sock, Command).
 
 %% Say something in the given channel
+say(RegName, Message, Channel) when is_atom(RegName) ->
+    case whereis(RegName) of
+        Pid when is_pid(Pid) -> Pid ! {say, Message, Channel}
+    end;
+
 say(Sock, Message, Channel) ->
     Command = lists:concat(["PRIVMSG ", Channel, " :", Message]),
     command(Sock, Command).
+
+say(RegName, Message, Channel, Who) when is_atom(RegName) ->
+    case whereis(RegName) of
+        Pid when is_pid(Pid) -> Pid ! {say, Message, Channel, Who}
+    end;
 
 say(Sock, Message, Channel, Who) ->
     Command = lists:concat(["PRIVMSG ", Channel, " :", Who, ": ", Message]),
@@ -72,6 +82,7 @@ command(Sock, Command) ->
 -define(SECONDS(Sec), Sec*1000).
 
 init(Parent, _Options, Data) ->
+    register_me(proplists:get_value(workername, Data, "")),
     proc_lib:init_ack(Parent, {ok, self()}),
     S = #state{},
     connect_loop(S#state{data=Data
@@ -80,6 +91,16 @@ init(Parent, _Options, Data) ->
                          ,logerr_fun=get_value(logerror_function,
                                                Data, S#state.logerr_fun)
                         }).
+
+
+register_me("")   -> false;
+register_me(Name0) ->
+    Name = list_to_atom(lists:concat(["ebot_", Name0])),
+    case whereis(Name) of
+        Pid when is_pid(Pid) -> false;
+        _ ->
+            register(Name, self())
+    end.
 
 connect_loop(State) ->
     connect_loop(State, ?SECONDS(1)).
@@ -127,6 +148,14 @@ x({tcp_error, _Socket, Reason}, State) ->
          [get_value(server, State#state.data),
           get_value(port, State#state.data),
           Reason]),
+    State;
+
+x({say, Message, Channel}, #state{socket = Sock} = State) ->
+    spawn(fun() -> say(Sock, Message, Channel) end),
+    State;
+
+x({say, Message, Channel, Who}, #state{socket = Sock} = State) ->
+    spawn(fun() -> say(Sock, Message, Channel, Who) end),
     State;
 
 x({From, Msg}, State) ->
