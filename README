@@ -1,2 +1,28 @@
-Data=file:consult("priv/example.conf").
-ebot_worker:start_link(Data).
+
+=== EBOT ===
+
+ebot - A rework of the old manderlbot code.
+
+The aim was to make a minimal code base tht can be included anywhere.
+
+Any command (part from PING, which is taken cre of by ebot) has to
+be implemented by the user of ebot as a plugin. Ebot my be started as:
+
+    ebot:start_link(Data).
+
+Where Data is a Key-Value proplist. See the priv/example.conf for
+an example of recognized Key-Values. The plugin code is defined
+by the matchspecs key and is a list of {IrcRegExp, {Mod,Fun}} tuples.
+Whenever one (or more) of the RegExp matches what the ebot receives,
+the defined callback will be called.
+
+See the src/ebot_example.erl code for some simple callback functions
+and one, somewhat more complex, callback function that is used to for
+asking about the status of Jenkins jobs.
+
+To send messages to an IRC channel use any of:
+
+    ebot:say(Ebot, Msg, "#"++Channel).
+    ebot:say(Ebot, Msg, "#"++Channel, Who).
+
+Have fun!
