@@ -22,7 +22,7 @@ asking about the status of Jenkins jobs.
 
 To send messages to an IRC channel use any of:
 
-    ebot:say(Ebot, Msg, "#"++Channel).
-    ebot:say(Ebot, Msg, "#"++Channel, Who).
+    ebot:say(EbotRegName, Msg, "#"++Channel).
+    ebot:say(EbotRegName, Msg, "#"++Channel, Who).
 
 Have fun!
